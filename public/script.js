@@ -26,7 +26,6 @@ const translations = {
   }
 };
 
-// 簡單的重試函數
 async function fetchWithRetry(url, retries = 3, delay = 1000) {
   for (let i = 0; i < retries; i++) {
     try {
@@ -48,6 +47,7 @@ async function loadEvents() {
       fetchWithRetry('https://school-calendar-backend.onrender.com/api/history')
     ]);
     allEvents = eventsData;
+    console.log('加載的事件資料：', allEvents);
     const history = historyData;
     allEvents.forEach(event => {
       event.revisionHistory = history.find(h => h.eventId === event.id)?.revisions || [];
@@ -126,6 +126,7 @@ function renderEventListForDate(dateStr) {
     const end = event.end ? new Date(event.end) : start;
     return date >= start && date <= end;
   });
+  console.log(`選擇日期 ${dateStr} 的事件：`, events);
 
   events.forEach(event => {
     const li = document.createElement('li');
@@ -138,7 +139,7 @@ function renderEventListForDate(dateStr) {
           <span class="event-date">${shortDate}</span>
           <span class="event-title">${event.title[currentLang]}</span>
           <span class="event-tags">
-            ${event.grade.map(g => `<span class="tag grade-${g}">${g.replace('grade-', '高').replace('all-grades', '全年級')}</span>`).join('')}
+            ${Array.isArray(event.grade) ? event.grade.map(g => `<span class="tag grade-${g}">${g.replace('grade-', '高').replace('all-grades', '全年級')}</span>`).join('') : '<span class="tag grade-all-grades">全年級</span>'}
             <span class="tag type-${event.type}">${event.type === 'important-exam' ? '重要考試' : event.type === 'school-activity' ? '學校活動' : event.type === 'announcement' ? '公告' : '假期'}</span>
           </span>
         </summary>
@@ -159,6 +160,7 @@ function renderEventListForDate(dateStr) {
 function renderEventList(eventsToDisplay) {
   const eventList = document.querySelector('#event-list ul');
   eventList.innerHTML = '';
+  console.log('即將渲染的事件：', eventsToDisplay);
   eventsToDisplay.forEach(event => {
     const li = document.createElement('li');
     const shortDate = event.end && event.start !== event.end ? 
@@ -170,7 +172,7 @@ function renderEventList(eventsToDisplay) {
           <span class="event-date">${shortDate}</span>
           <span class="event-title">${event.title[currentLang]}</span>
           <span class="event-tags">
-            ${event.grade.map(g => `<span class="tag grade-${g}">${g.replace('grade-', '高').replace('all-grades', '全年級')}</span>`).join('')}
+            ${Array.isArray(event.grade) ? event.grade.map(g => `<span class="tag grade-${g}">${g.replace('grade-', '高').replace('all-grades', '全年級')}</span>`).join('') : '<span class="tag grade-all-grades">全年級</span>'}
             <span class="tag type-${event.type}">${event.type === 'important-exam' ? '重要考試' : event.type === 'school-activity' ? '學校活動' : event.type === 'announcement' ? '公告' : '假期'}</span>
           </span>
         </summary>
@@ -196,7 +198,7 @@ function searchEvents() {
   let filteredEvents = allEvents;
 
   if (gradeFilter) {
-    filteredEvents = filteredEvents.filter(event => event.grade.includes(gradeFilter));
+    filteredEvents = filteredEvents.filter(event => Array.isArray(event.grade) && event.grade.includes(gradeFilter));
   }
 
   if (typeFilter) {
