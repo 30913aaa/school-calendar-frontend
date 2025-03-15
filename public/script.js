@@ -1,6 +1,6 @@
 let allEvents = [];
 let currentYear = new Date().getFullYear();
-let currentMonth = new Date().getMonth(); // 0-11
+let currentMonth = new Date().getMonth();
 let currentLang = 'zh';
 
 const translations = {
@@ -26,15 +26,29 @@ const translations = {
   }
 };
 
+// 簡單的重試函數
+async function fetchWithRetry(url, retries = 3, delay = 1000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      if (i === retries - 1) throw error;
+      console.log(`請求失敗，重試 ${i + 1}/${retries} 次...`, error);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+}
+
 async function loadEvents() {
   try {
-    const [eventsResponse, historyResponse] = await Promise.all([
-      fetch('https://school-calendar-backend.onrender.com/api/events', { cache: 'no-store' }),
-      fetch('https://school-calendar-backend.onrender.com/api/history', { cache: 'no-store' })
+    const [eventsData, historyData] = await Promise.all([
+      fetchWithRetry('https://school-calendar-backend.onrender.com/api/events'),
+      fetchWithRetry('https://school-calendar-backend.onrender.com/api/history')
     ]);
-    if (!eventsResponse.ok || !historyResponse.ok) throw new Error('Network response was not ok');
-    allEvents = await eventsResponse.json();
-    const history = await historyResponse.json();
+    allEvents = eventsData;
+    const history = historyData;
     allEvents.forEach(event => {
       event.revisionHistory = history.find(h => h.eventId === event.id)?.revisions || [];
     });
