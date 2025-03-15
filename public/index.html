@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>學校日曆</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- 使用Font Awesome圖標 -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <header>
+    <img src="logo.png" alt="學校標誌" class="logo">
+    <h1 id="title">School Calendar</h1>
+    <select id="language">
+      <option value="en">English</option>
+      <option value="zh">中文</option>
+    </select>
+  </header>
+
+  <nav>
+    <button id="prev-month">Previous Month</button>
+    <span id="current-month"></span>
+    <button id="next-month">Next Month</button>
+    <button id="today">Today</button>
+    <button id="toggle-events">Hide Events</button>
+  </nav>
+
+  <main class="flex">
+    <section id="calendar" class="flex-grow">
+      <div class="calendar-grid"></div>
+    </section>
+    <aside id="event-list" class="visible">
+      <ul></ul>
+    </aside>
+  </main>
+
+  <footer>
+    <p>© 2025 Guo</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

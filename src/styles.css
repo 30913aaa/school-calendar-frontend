@@ -1,0 +1,141 @@
+:root {
+    --background-color: #e6f2ff;
+    --calendar-bg: white;
+    --text-color: black;
+    --highlight-color: yellow;
+    --event-activity: green;
+    --event-announcement: red;
+    --event-holiday: yellow;
+  }
+  
+  body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 10px;
+  }
+  
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+  }
+  
+  .logo {
+    width: 50px;
+  }
+  
+  nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0;
+    flex-wrap: wrap;
+  }
+  
+  button {
+    padding: 5px 10px;
+  }
+  
+  .flex {
+    display: flex;
+  }
+  
+  .flex-grow {
+    flex-grow: 1;
+  }
+  
+  #calendar {
+    background-color: var(--calendar-bg);
+    padding: 10px;
+  }
+  
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+  }
+  
+  .day-header {
+    background: #f0f0f0;
+    text-align: center;
+    padding: 5px;
+  }
+  
+  .day-cell {
+    background: white;
+    border: 1px solid #ccc;
+    min-height: 80px;
+    position: relative;
+  }
+  
+  .day-cell.current {
+    background: var(--highlight-color);
+  }
+  
+  .day-cell.inactive {
+    background: #e0e0e0;
+  }
+  
+  .date {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+  }
+  
+  .events {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+  }
+  
+  .events i {
+    margin-right: 3px;
+  }
+  
+  #event-list {
+    width: 30%;
+    margin-left: 20px;
+    background-color: var(--calendar-bg);
+    padding: 10px;
+  }
+  
+  #event-list:not(.visible) {
+    display: none;
+  }
+  
+  .event-list li {
+    margin-bottom: 10px;
+  }
+  
+  .event-date {
+    font-weight: bold;
+  }
+  
+  .event-title {
+    margin-left: 10px;
+  }
+  
+  footer {
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  @media (max-width: 768px) {
+    .flex {
+      flex-direction: column;
+    }
+    #event-list {
+      width: 100%;
+      margin-left: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    #event-list.visible {
+      max-height: 500px;
+    }
+  }
