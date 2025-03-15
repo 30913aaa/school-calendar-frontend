@@ -28,9 +28,16 @@ const translations = {
 
 async function loadEvents() {
   try {
-    const response = await fetch('http://school-calendar-backend.onrender.com/api/events', { cache: 'no-store' });
-    if (!response.ok) throw new Error('Network response was not ok');
-    allEvents = await response.json();
+    const [eventsResponse, historyResponse] = await Promise.all([
+      fetch('https://school-calendar-backend.onrender.com/api/events', { cache: 'no-store' }),
+      fetch('https://school-calendar-backend.onrender.com/api/history', { cache: 'no-store' })
+    ]);
+    if (!eventsResponse.ok || !historyResponse.ok) throw new Error('Network response was not ok');
+    allEvents = await eventsResponse.json();
+    const history = await historyResponse.json();
+    allEvents.forEach(event => {
+      event.revisionHistory = history.find(h => h.eventId === event.id)?.revisions || [];
+    });
   } catch (error) {
     console.error('無法讀取事件資料：', error);
     allEvents = [];
