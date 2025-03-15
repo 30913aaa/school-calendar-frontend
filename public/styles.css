@@ -1,143 +1,236 @@
 :root {
-    --background-color: #e6f2ff; /* 淺藍色背景 */
-    --calendar-bg: white; /* 白色日曆背景 */
-    --text-color: black; /* 黑色文字 */
-    --highlight-color: yellow; /* 當前日期高亮 */
-    --event-activity: green; /* 活動 */
-    --event-announcement: red; /* 公告 */
-    --event-holiday: yellow; /* 假期 */
-  }
-  
-  body {
-    background-color: var(--background-color);
-    color: var(--text-color);
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 10px;
-  }
-  .day-cell.selected {
-    background: #d3e8ff; /* 淺藍色高亮 */
-  }
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-  }
-  
-  .logo {
-    width: 50px;
-  }
-  
-  nav {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    margin: 10px 0;
-    flex-wrap: wrap;
-  }
-  
-  button {
-    padding: 5px 10px;
-  }
-  
+  --background-color: #e6f2ff;
+  --calendar-bg: white;
+  --text-color: black;
+  --highlight-color: yellow;
+  --event-important-exam: red;
+  --event-school-activity: green;
+  --event-announcement: orange;
+  --event-holiday: yellow;
+  --grade-1: #ff9999;
+  --grade-2: #99ccff;
+  --grade-3: #99ff99;
+  --all-grades: #ffcc99;
+  --search-bg: #ff9900; /* 橙色背景 */
+  --search-text: white; /* 白色文字 */
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 10px;
+}
+
+.day-cell.selected {
+  background: #d3e8ff;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: #f0f0f0;
+}
+
+.logo {
+  width: 50px;
+}
+
+.search-container {
+  display: flex;
+  gap: 5px;
+  background-color: var(--search-bg);
+  padding: 5px 10px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.search-container select,
+.search-container button {
+  padding: 5px;
+  border: none;
+  border-radius: 5px;
+  background-color: var(--search-text);
+  color: var(--search-bg);
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.search-container button:hover {
+  background-color: #e68a00;
+}
+
+nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+  flex-wrap: wrap;
+}
+
+button, select {
+  padding: 5px 10px;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-grow {
+  flex-grow: 1;
+}
+
+#calendar {
+  background-color: var(--calendar-bg);
+  padding: 10px;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+
+.day-header {
+  background: #f0f0f0;
+  text-align: center;
+  padding: 5px;
+}
+
+.day-cell {
+  background: white;
+  border: 1px solid #ccc;
+  min-height: 80px;
+  position: relative;
+}
+
+.day-cell.current {
+  background: var(--highlight-color);
+}
+
+.day-cell.inactive {
+  background: #e0e0e0;
+}
+
+.date {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+}
+
+.events {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+}
+
+.events i {
+  margin-right: 3px;
+}
+
+#event-list {
+  width: 30%;
+  margin-left: 20px;
+  background-color: var(--calendar-bg);
+  padding: 10px;
+}
+
+#event-list:not(.visible) {
+  display: none;
+}
+
+.event-list li {
+  margin-bottom: 10px;
+}
+
+.event-date {
+  font-weight: bold;
+}
+
+.event-title {
+  margin-left: 10px;
+}
+
+.event-tags {
+  margin-left: 10px;
+  font-size: 12px;
+}
+
+.tag {
+  padding: 2px 5px;
+  margin-right: 5px;
+  border-radius: 3px;
+  color: white;
+}
+
+.tag.grade-grade-1 {
+  background-color: var(--grade-1);
+}
+
+.tag.grade-grade-2 {
+  background-color: var(--grade-2);
+}
+
+.tag.grade-grade-3 {
+  background-color: var(--grade-3);
+}
+
+.tag.grade-all-grades {
+  background-color: var(--all-grades);
+}
+
+.tag.type-important-exam {
+  background-color: var(--event-important-exam);
+}
+
+.tag.type-school-activity {
+  background-color: var(--event-school-activity);
+}
+
+.tag.type-announcement {
+  background-color: var(--event-announcement);
+}
+
+.tag.type-holiday {
+  background-color: var(--event-holiday);
+}
+
+.revision-history {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #666;
+}
+
+.revision-history h4 {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+footer {
+  text-align: center;
+  margin-top: 20px;
+}
+
+@media (max-width: 768px) {
   .flex {
-    display: flex;
+    flex-direction: column;
   }
-  
-  .flex-grow {
-    flex-grow: 1;
+  #event-list {
+    width: 100%;
+    margin-left: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
   }
-  
-  #calendar {
-    background-color: var(--calendar-bg);
-    padding: 10px;
+  #event-list.visible {
+    max-height: 500px;
   }
-  
-  .calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
+  .search-container {
+    flex-direction: column;
     gap: 5px;
   }
-  
-  .day-header {
-    background: #f0f0f0;
-    text-align: center;
-    padding: 5px;
-  }
-  
-  .day-cell {
-    background: white;
-    border: 1px solid #ccc;
-    min-height: 80px;
-    position: relative;
-  }
-  
-  .day-cell.current {
-    background: var(--highlight-color);
-  }
-  
-  .day-cell.inactive {
-    background: #e0e0e0;
-  }
-  
-  .date {
-    position: absolute;
-    top: 5px;
-    left: 5px;
-  }
-  
-  .events {
-    position: absolute;
-    bottom: 5px;
-    left: 5px;
-  }
-  
-  .events i {
-    margin-right: 3px;
-  }
-  
-  #event-list {
-    width: 30%;
-    margin-left: 20px;
-    background-color: var(--calendar-bg);
-    padding: 10px;
-  }
-  
-  #event-list:not(.visible) {
-    display: none;
-  }
-  
-  .event-list li {
-    margin-bottom: 10px;
-  }
-  
-  .event-date {
-    font-weight: bold;
-  }
-  
-  .event-title {
-    margin-left: 10px;
-  }
-  
-  footer {
-    text-align: center;
-    margin-top: 20px;
-  }
-  
-  @media (max-width: 768px) {
-    .flex {
-      flex-direction: column;
-    }
-    #event-list {
-      width: 100%;
-      margin-left: 0;
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease;
-    }
-    #event-list.visible {
-      max-height: 500px;
-    }
-  }
+}

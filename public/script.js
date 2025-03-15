@@ -28,7 +28,7 @@ const translations = {
 
 async function loadEvents() {
   try {
-    const response = await fetch('https://school-calendar-backend.onrender.com/api/events', { cache: 'no-store' });
+    const response = await fetch('http://school-calendar-backend.onrender.com/api/events', { cache: 'no-store' });
     if (!response.ok) throw new Error('Network response was not ok');
     allEvents = await response.json();
   } catch (error) {
@@ -38,8 +38,7 @@ async function loadEvents() {
   renderPage();
 }
 
-
-let selectedDate = null; // 追蹤當前選中的日期
+let selectedDate = null;
 
 function renderCalendar() {
   const calendarGrid = document.querySelector('.calendar-grid');
@@ -61,31 +60,32 @@ function renderCalendar() {
     cell.className = 'day-cell';
 
     if (i >= firstDay && dayCounter <= daysInMonth) {
+      const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(dayCounter).padStart(2, '0')}`;
       cell.innerHTML = `<span class="date">${dayCounter}</span><div class="events"></div>`;
       if (currentYear === today.getFullYear() && currentMonth === today.getMonth() && dayCounter === today.getDate()) {
         cell.classList.add('current');
       }
-
-      // 檢查是否為選中日期
-      const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(dayCounter).padStart(2, '0')}`;
       if (dateStr === selectedDate) {
         cell.classList.add('selected');
       }
+      if (getEventsForDay(dayCounter).some(e => e.type === 'important-exam')) {
+        cell.querySelector('.date').style.color = 'red';
+      }
 
-      // 添加點擊事件
       cell.addEventListener('click', () => {
-        selectedDate = dateStr; // 更新選中日期
-        renderCalendar(); // 重新渲染日曆以更新高亮
-        renderEventListForDate(selectedDate); // 渲染該日期的事件
+        selectedDate = dateStr;
+        renderCalendar();
+        renderEventListForDate(selectedDate);
       });
 
       const events = getEventsForDay(dayCounter);
-      console.log(`日期 ${dayCounter} 的事件：`, events);
       const eventDiv = cell.querySelector('.events');
       events.forEach(event => {
         const icon = document.createElement('i');
-        icon.className = `fa ${event.type === 'activity' ? 'fa-book' : event.type === 'announcement' ? 'fa-megaphone' : 'fa-star'}`;
-        icon.style.color = `var(--event-${event.type})`;
+        icon.className = `fa ${event.type === 'important-exam' ? 'fa-graduation-cap' : 
+                          event.type === 'school-activity' ? 'fa-book' : 
+                          event.type === 'announcement' ? 'fa-megaphone' : 'fa-star'}`;
+        icon.style.color = `var(--event-${event.type.replace('-', '')})`;
         eventDiv.appendChild(icon);
       });
       dayCounter++;
@@ -95,6 +95,7 @@ function renderCalendar() {
     calendarGrid.appendChild(cell);
   }
 }
+
 function renderEventListForDate(dateStr) {
   const eventList = document.querySelector('#event-list ul');
   eventList.innerHTML = '';
@@ -104,45 +105,95 @@ function renderEventListForDate(dateStr) {
     const end = event.end ? new Date(event.end) : start;
     return date >= start && date <= end;
   });
-  console.log(`日期 ${dateStr} 的事件：`, events);
 
   events.forEach(event => {
     const li = document.createElement('li');
-    const dateRange = event.end && event.start !== event.end ? `${event.start} - ${event.end}` : event.start;
+    const shortDate = event.end && event.start !== event.end ? 
+      `${event.start.slice(5).replace('-', '/')} - ${event.end.slice(5).replace('-', '/')}` : 
+      event.start.slice(5).replace('-', '/');
     li.innerHTML = `
       <details>
         <summary>
-          <span class="event-date">${dateRange}</span>
+          <span class="event-date">${shortDate}</span>
           <span class="event-title">${event.title[currentLang]}</span>
+          <span class="event-tags">
+            ${event.grade.map(g => `<span class="tag grade-${g}">${g.replace('grade-', '高').replace('all-grades', '全年級')}</span>`).join('')}
+            <span class="tag type-${event.type}">${event.type === 'important-exam' ? '重要考試' : event.type === 'school-activity' ? '學校活動' : event.type === 'announcement' ? '公告' : '假期'}</span>
+          </span>
         </summary>
         <p class="event-description">${event.description[currentLang]}</p>
-      </details>
-    `;
-    eventList.appendChild(li);
-  });
-}
-function renderEventList() {
-  const eventList = document.querySelector('#event-list ul');
-  eventList.innerHTML = '';
-  const monthEvents = getEventsForMonth();
-  console.log('本月事件：', monthEvents);
-  monthEvents.forEach(event => {
-    const li = document.createElement('li');
-    const dateRange = event.end && event.start !== event.end ? `${event.start} - ${event.end}` : event.start;
-    li.innerHTML = `
-      <details>
-        <summary>
-          <span class="event-date">${dateRange}</span>
-          <span class="event-title">${event.title[currentLang]}</span>
-        </summary>
-        <p class="event-description">${event.description[currentLang]}</p>
+        ${event.link ? `<a href="${event.link}" target="_blank">查看詳情</a>` : ''}
+        <div class="revision-history">
+          <h4>修訂歷程</h4>
+          ${event.revisionHistory.map(r => `
+            <p>${new Date(r.date).toLocaleString()} - ${r.action}: ${r.details}</p>
+          `).join('')}
+        </div>
       </details>
     `;
     eventList.appendChild(li);
   });
 }
 
-// 更新文本
+function renderEventList(eventsToDisplay) {
+  const eventList = document.querySelector('#event-list ul');
+  eventList.innerHTML = '';
+  eventsToDisplay.forEach(event => {
+    const li = document.createElement('li');
+    const shortDate = event.end && event.start !== event.end ? 
+      `${event.start.slice(5).replace('-', '/')} - ${event.end.slice(5).replace('-', '/')}` : 
+      event.start.slice(5).replace('-', '/');
+    li.innerHTML = `
+      <details>
+        <summary>
+          <span class="event-date">${shortDate}</span>
+          <span class="event-title">${event.title[currentLang]}</span>
+          <span class="event-tags">
+            ${event.grade.map(g => `<span class="tag grade-${g}">${g.replace('grade-', '高').replace('all-grades', '全年級')}</span>`).join('')}
+            <span class="tag type-${event.type}">${event.type === 'important-exam' ? '重要考試' : event.type === 'school-activity' ? '學校活動' : event.type === 'announcement' ? '公告' : '假期'}</span>
+          </span>
+        </summary>
+        <p class="event-description">${event.description[currentLang]}</p>
+        ${event.link ? `<a href="${event.link}" target="_blank">查看詳情</a>` : ''}
+        <div class="revision-history">
+          <h4>修訂歷程</h4>
+          ${event.revisionHistory.map(r => `
+            <p>${new Date(r.date).toLocaleString()} - ${r.action}: ${r.details}</p>
+          `).join('')}
+        </div>
+      </details>
+    `;
+    eventList.appendChild(li);
+  });
+}
+
+function searchEvents() {
+  const gradeFilter = document.getElementById('search-grade').value;
+  const typeFilter = document.getElementById('search-type').value;
+  const monthFilter = document.getElementById('search-month').value;
+
+  let filteredEvents = allEvents;
+
+  if (gradeFilter) {
+    filteredEvents = filteredEvents.filter(event => event.grade.includes(gradeFilter));
+  }
+
+  if (typeFilter) {
+    filteredEvents = filteredEvents.filter(event => event.type === typeFilter);
+  }
+
+  if (monthFilter !== '') {
+    const month = parseInt(monthFilter);
+    filteredEvents = filteredEvents.filter(event => {
+      const startMonth = new Date(event.start).getMonth();
+      const endMonth = event.end ? new Date(event.end).getMonth() : startMonth;
+      return startMonth <= month && endMonth >= month;
+    });
+  }
+
+  renderEventList(filteredEvents);
+}
+
 function updateTexts() {
   document.getElementById('title').textContent = translations[currentLang].title;
   document.getElementById('prev-month').textContent = translations[currentLang].prev;
@@ -159,7 +210,7 @@ function getEventsForDay(day) {
   const date = new Date(dateStr);
   return allEvents.filter(event => {
     const start = new Date(event.start);
-    const end = event.end ? new Date(event.end) : start; // 如果 end 不存在，則使用 start
+    const end = event.end ? new Date(event.end) : start;
     return date >= start && date <= end;
   });
 }
@@ -169,19 +220,17 @@ function getEventsForMonth() {
   const lastDay = new Date(currentYear, currentMonth + 1, 0);
   return allEvents.filter(event => {
     const start = new Date(event.start);
-    const end = event.end ? new Date(event.end) : start; // 如果 end 不存在，則使用 start
+    const end = event.end ? new Date(event.end) : start;
     return start <= lastDay && end >= firstDay;
   }).sort((a, b) => new Date(a.start) - new Date(b.start));
 }
 
-// 渲染頁面
 function renderPage() {
   renderCalendar();
-  renderEventList();
+  renderEventList(getEventsForMonth());
   updateTexts();
 }
 
-// 事件監聽
 document.getElementById('prev-month').addEventListener('click', () => {
   currentMonth--;
   if (currentMonth < 0) {
@@ -215,6 +264,10 @@ document.getElementById('toggle-events').addEventListener('click', () => {
 document.getElementById('language').addEventListener('change', (e) => {
   currentLang = e.target.value;
   renderPage();
+});
+
+document.getElementById('search-btn').addEventListener('click', () => {
+  searchEvents();
 });
 
 // 初始化
