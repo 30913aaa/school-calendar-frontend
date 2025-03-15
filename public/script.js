@@ -1,7 +1,7 @@
 let allEvents = [];
 let currentYear = new Date().getFullYear();
 let currentMonth = new Date().getMonth(); // 0-11
-let currentLang = 'en';
+let currentLang = 'zh';
 
 const translations = {
   en: {
@@ -28,7 +28,7 @@ const translations = {
 
 async function loadEvents() {
   try {
-    const response = await fetch('http://localhost:3000/api/events', { cache: 'no-store' });
+    const response = await fetch('https://school-calendar-backend.onrender.com/api/events', { cache: 'no-store' });
     if (!response.ok) throw new Error('Network response was not ok');
     allEvents = await response.json();
   } catch (error) {
