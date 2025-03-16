@@ -1,8 +1,8 @@
 :root {
   --background-color: #e6f2ff;
   --calendar-bg: white;
-  
-  
+  --text-color: black;
+  --highlight-color: yellow;
   --event-important-exam: red;
   --event-school-activity: green;
   --event-announcement: orange;
@@ -13,16 +13,13 @@
   --all-grades: #ffcc99;
   --search-bg: #ff9900; /* 橙色背景 */
   --search-text: white; /* 白色文字 */
-  
-  --text-color: #333;
-  --highlight-color: #007bff;
 }
 
 body {
   background-color: var(--background-color);
   color: var(--text-color);
   font-family: Arial, sans-serif;
-  margin: 10px;
+  margin: 0;
   padding: 10px;
 }
 
@@ -88,8 +85,8 @@ button, select {
 }
 
 #calendar {
-  flex: 1;
-  width: 60%;
+  background-color: var(--calendar-bg);
+  padding: 10px;
 }
 
 .calendar-grid {
@@ -130,16 +127,13 @@ button, select {
   bottom: 5px;
   left: 5px;
 }
-#admin-event-list {
-  flex: 2;
-  width: 60%;
-}
+
 .events i {
   margin-right: 3px;
 }
 
 #event-list {
-  width: 30%;
+  width: 50%;
   margin-left: 20px;
   background-color: var(--calendar-bg);
   padding: 10px;
@@ -165,29 +159,7 @@ button, select {
   margin-left: 10px;
   font-size: 12px;
 }
-.day-cell {
-  min-height: 60px; /* 縮小格子高度 */
-  position: relative;
-}
 
-.day-cell.important-date {
-  border: 2px solid red; /* 標示重點日期 */
-  background-color: #ffebee; /* 輕微背景色 */
-}
-
-.event-count {
-  font-size: 10px; /* 調整事件數量文字大小 */
-}
-
-#calendar {
-  flex: 1;
-  width: 40%; /* 縮小月曆 */
-}
-
-#event-list, #admin-event-list {
-  flex: 2;
-  width: 60%; /* 放大事件列表 */
-}
 .tag {
   padding: 2px 5px;
   margin-right: 5px;
