@@ -139,7 +139,7 @@ function renderEventListForDate(dateStr) {
           <span class="event-date">${shortDate}</span>
           <span class="event-title">${event.title[currentLang]}</span>
           <span class="event-tags">
-            ${Array.isArray(event.grade) ? event.grade.map(g => `<span class="tag grade-${g}">${g.replace('grade-', '高').replace('all-grades', '全年級')}</span>`).join('') : '<span class="tag grade-all-grades">全年級</span>'}
+      
             <span class="tag type-${event.type}">${event.type === 'important-exam' ? '重要考試' : event.type === 'school-activity' ? '學校活動' : event.type === 'announcement' ? '公告' : '假期'}</span>
           </span>
         </summary>
@@ -172,7 +172,7 @@ function renderEventList(eventsToDisplay) {
           <span class="event-date">${shortDate}</span>
           <span class="event-title">${event.title[currentLang]}</span>
           <span class="event-tags">
-            ${Array.isArray(event.grade) ? event.grade.map(g => `<span class="tag grade-${g}">${g.replace('grade-', '高').replace('all-grades', '全年級')}</span>`).join('') : '<span class="tag grade-all-grades">全年級</span>'}
+           
             <span class="tag type-${event.type}">${event.type === 'important-exam' ? '重要考試' : event.type === 'school-activity' ? '學校活動' : event.type === 'announcement' ? '公告' : '假期'}</span>
           </span>
         </summary>
@@ -191,15 +191,12 @@ function renderEventList(eventsToDisplay) {
 }
 
 function searchEvents() {
-  const gradeFilter = document.getElementById('search-grade').value;
   const typeFilter = document.getElementById('search-type').value;
   const monthFilter = document.getElementById('search-month').value;
 
   let filteredEvents = allEvents;
 
-  if (gradeFilter) {
-    filteredEvents = filteredEvents.filter(event => Array.isArray(event.grade) && event.grade.includes(gradeFilter));
-  }
+ 
 
   if (typeFilter) {
     filteredEvents = filteredEvents.filter(event => event.type === typeFilter);
