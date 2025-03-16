@@ -53,7 +53,7 @@ async function loadEvents() {
 }
 
 let selectedDate = null;
-
+span.appendChild(document.createTextNode(getTypeName(type)));
 function renderCalendar() {
   const calendarGrid = document.querySelector('.calendar-grid');
   calendarGrid.innerHTML = '';
@@ -69,45 +69,66 @@ function renderCalendar() {
   const today = new Date();
   let dayCounter = 1;
 
+  const isAdminPage = document.getElementById('admin-event-list') !== null; // 檢查是否為管理頁面
+
   for (let i = 0; i < 42; i++) {
     const cell = document.createElement('div');
     cell.className = 'day-cell';
 
     if (i >= firstDay && dayCounter <= daysInMonth) {
       const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(dayCounter).padStart(2, '0')}`;
-      cell.innerHTML = `<span class="date">${dayCounter}</span><div class="events"></div>`;
+      cell.innerHTML = `<span class="date">${dayCounter}</span>`;
       if (currentYear === today.getFullYear() && currentMonth === today.getMonth() && dayCounter === today.getDate()) {
         cell.classList.add('current');
       }
       if (dateStr === selectedDate) {
         cell.classList.add('selected');
       }
-      if (getEventsForDay(dayCounter).some(e => e.type === 'important-exam')) {
+
+      // 標示重點日期：重要考試用紅色文字，其他類型可擴展
+      const events = getEventsForDay(dayCounter);
+      if (events.some(e => e.type === 'important-exam')) {
         cell.querySelector('.date').style.color = 'red';
+        cell.classList.add('important-date'); // 可選：添加背景或邊框
       }
 
+      // 點擊事件：更新選定日期並渲染事件列表
       cell.addEventListener('click', () => {
         selectedDate = dateStr;
         renderCalendar();
         renderEventListForDate(selectedDate);
       });
 
-      const events = getEventsForDay(dayCounter);
-      const eventDiv = cell.querySelector('.events');
-      events.forEach(event => {
-        const icon = document.createElement('i');
-        icon.className = `fa ${event.type === 'important-exam' ? 'fa-graduation-cap' : 
-                          event.type === 'school-activity' ? 'fa-book' : 
-                          event.type === 'announcement' ? 'fa-megaphone' : 'fa-star'}`;
-        icon.style.color = `var(--event-${event.type.replace('-', '')})`;
-        eventDiv.appendChild(icon);
-      });
+      // 移除圖示，改為顯示事件數量（可選）或完全移除
+      if (!isAdminPage && events.length > 0) {
+        const eventCount = document.createElement('span');
+        eventCount.className = 'event-count';
+        eventCount.textContent = events.length; // 顯示事件數量
+        eventCount.style.color = 'gray';
+        eventCount.style.position = 'absolute';
+        eventCount.style.bottom = '5px';
+        eventCount.style.left = '5px';
+        eventCount.style.fontSize = '12px';
+        cell.appendChild(eventCount);
+      }
+
       dayCounter++;
     } else {
       cell.classList.add('inactive');
     }
     calendarGrid.appendChild(cell);
   }
+}
+
+// 輔助函數：獲取某天的所有事件
+function getEventsForDay(day) {
+  const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  const date = new Date(dateStr);
+  return allEvents.filter(event => {
+    const start = new Date(event.start);
+    const end = event.end ? new Date(event.end) : start;
+    return date >= start && date <= end;
+  });
 }
 
 function renderEventListForDate(dateStr) {
@@ -145,30 +166,53 @@ function renderEventListForDate(dateStr) {
 }
 
 function renderEventList(eventsToDisplay) {
-  const eventList = document.querySelector('#event-list ul');
+  const eventList = document.querySelector(isAdminPage ? '#admin-event-list ul' : '#event-list ul');
   eventList.innerHTML = '';
-  console.log('即將渲染的事件：', eventsToDisplay);
   eventsToDisplay.forEach(event => {
     const li = document.createElement('li');
-    const shortDate = event.end && event.start !== event.end ? 
-      `${event.start.slice(5).replace('-', '/')} - ${event.end.slice(5).replace('-', '/')}` : 
-      event.start.slice(5).replace('-', '/');
+    li.dataset.id = event.id;
     li.innerHTML = `
-      <details>
-        <summary>
-          <span class="event-date">${shortDate}</span>
-          <span class="event-title">${event.title[currentLang]}</span>
-          <span class="event-tags">
-            ${Array.isArray(event.grade) ? event.grade.map(g => `<span class="tag grade-${g}">${g.replace('grade-', '高').replace('all-grades', '全年級')}</span>`).join('') : '<span class="tag grade-all-grades">全年級</span>'}
-            <span class="tag type-${event.type}">${event.type === 'important-exam' ? '重要考試' : event.type === 'school-activity' ? '學校活動' : event.type === 'announcement' ? '公告' : '假期'}</span>
-          </span>
-        </summary>
-        <p class="event-description">${event.description[currentLang]}</p>
-        ${event.link ? `<a href="${event.link}" target="_blank">查看詳情</a>` : ''}
-      </details>
+      <span class="event-date">${event.start}</span>
+      <span class="event-title">${event.title[currentLang]}</span>
+      <span class="event-tags">
+        ${Array.isArray(event.grade) ? event.grade.map(g => `<span class="tag grade-${g}">${g.replace('grade-', '高').replace('all-grades', '全年級')}</span>`).join('') : '<span class="tag grade-all-grades">全年級</span>'}
+        <span class="tag type-${event.type}">${event.type === 'important-exam' ? '重要考試' : event.type === 'school-activity' ? '學校活動' : event.type === 'announcement' ? '公告' : '假期'}</span>
+      </span>
+      ${isAdminPage ? `
+        <input type="checkbox" class="select-event">
+        <button class="edit-button">Edit</button>
+        <button class="delete-button">Delete</button>
+      ` : ''}
     `;
+    if (isAdminPage) {
+      const deleteBtn = li.querySelector('.delete-button');
+      deleteBtn.addEventListener('click', () => {
+        fetchWithRetry('/admin/delete', { method: 'POST', body: JSON.stringify({ id: event.id }) })
+          .then(() => loadEvents())
+          .catch(error => console.error('Error deleting event:', error));
+      });
+      const editBtn = li.querySelector('.edit-button');
+      editBtn.addEventListener('click', () => {
+        // Handle edit functionality, possibly show edit form
+      });
+    }
     eventList.appendChild(li);
   });
+  if (isAdminPage) {
+    const deleteSelectedBtn = document.getElementById('delete-selected');
+    deleteSelectedBtn.addEventListener('click', () => {
+      const selectedEvents = Array.from(document.querySelectorAll('#admin-event-list ul li input[type="checkbox"]:checked'))
+        .map(checkbox => {
+          const li = checkbox.parentElement;
+          return li.dataset.id;
+        });
+      if (selectedEvents.length > 0) {
+        fetchWithRetry('/admin/delete-multiple', { method: 'POST', body: JSON.stringify(selectedEvents) })
+          .then(() => loadEvents())
+          .catch(error => console.error('Error deleting selected events:', error));
+      }
+    });
+  }
 }
 
 function searchEvents() {
@@ -252,7 +296,7 @@ document.getElementById('next-month').addEventListener('click', () => {
   }
   renderPage();
 });
-
+let isAdminPage = document.getElementById('admin-event-list') !== null;
 document.getElementById('today').addEventListener('click', () => {
   currentYear = new Date().getFullYear();
   currentMonth = new Date().getMonth();
