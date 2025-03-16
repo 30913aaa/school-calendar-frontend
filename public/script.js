@@ -42,16 +42,9 @@ async function fetchWithRetry(url, retries = 3, delay = 1000) {
 
 async function loadEvents() {
   try {
-    const [eventsData, historyData] = await Promise.all([
-      fetchWithRetry('https://school-calendar-backend.onrender.com/api/events'),
-      fetchWithRetry('https://school-calendar-backend.onrender.com/api/history')
-    ]);
+    const eventsData = await fetchWithRetry('https://school-calendar-backend.onrender.com/api/events');
     allEvents = eventsData;
     console.log('加載的事件資料：', allEvents);
-    const history = historyData;
-    allEvents.forEach(event => {
-      event.revisionHistory = history.find(h => h.eventId === event.id)?.revisions || [];
-    });
   } catch (error) {
     console.error('無法讀取事件資料：', error);
     allEvents = [];
@@ -145,12 +138,6 @@ function renderEventListForDate(dateStr) {
         </summary>
         <p class="event-description">${event.description[currentLang]}</p>
         ${event.link ? `<a href="${event.link}" target="_blank">查看詳情</a>` : ''}
-        <div class="revision-history">
-          <h4>修訂歷程</h4>
-          ${event.revisionHistory.map(r => `
-            <p>${new Date(r.date).toLocaleString()} - ${r.action}: ${r.details}</p>
-          `).join('')}
-        </div>
       </details>
     `;
     eventList.appendChild(li);
@@ -178,12 +165,6 @@ function renderEventList(eventsToDisplay) {
         </summary>
         <p class="event-description">${event.description[currentLang]}</p>
         ${event.link ? `<a href="${event.link}" target="_blank">查看詳情</a>` : ''}
-        <div class="revision-history">
-          <h4>修訂歷程</h4>
-          ${event.revisionHistory.map(r => `
-            <p>${new Date(r.date).toLocaleString()} - ${r.action}: ${r.details}</p>
-          `).join('')}
-        </div>
       </details>
     `;
     eventList.appendChild(li);
