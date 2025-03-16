@@ -75,7 +75,7 @@ function renderCalendar() {
 
     if (i >= firstDay && dayCounter <= daysInMonth) {
       const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(dayCounter).padStart(2, '0')}`;
-      cell.innerHTML = `<span class="date">${dayCounter}</span><div class="events"></div>`;
+      cell.innerHTML = `<span class="date">${dayCounter}</span>`; // 移除 <div class="events"></div>
       if (currentYear === today.getFullYear() && currentMonth === today.getMonth() && dayCounter === today.getDate()) {
         cell.classList.add('current');
       }
@@ -92,16 +92,7 @@ function renderCalendar() {
         renderEventListForDate(selectedDate);
       });
 
-      const events = getEventsForDay(dayCounter);
-      const eventDiv = cell.querySelector('.events');
-      events.forEach(event => {
-        const icon = document.createElement('i');
-        icon.className = `fa ${event.type === 'important-exam' ? 'fa-graduation-cap' : 
-                          event.type === 'school-activity' ? 'fa-book' : 
-                          event.type === 'announcement' ? 'fa-megaphone' : 'fa-star'}`;
-        icon.style.color = `var(--event-${event.type.replace('-', '')})`;
-        eventDiv.appendChild(icon);
-      });
+      // 移除圖示邏輯，原 events.forEach 部分已刪除
       dayCounter++;
     } else {
       cell.classList.add('inactive');
