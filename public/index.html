@@ -5,72 +5,151 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>學校日曆</title>
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#3498db">
 </head>
 <body>
   <header>
     <img src="logo.png" alt="學校標誌" class="logo">
-    <h1 id="title">School Calendar</h1>
-    <div class="search-container">
-      <select id="search-grade">
-        <option value="">所有年級</option>
-        <option value="grade-1">高一</option>
-        <option value="grade-2">高二</option>
-        <option value="grade-3">高三</option>
-        <option value="all-grades">全年級</option>
+    <h1 class="header-title" id="title">School Calendar</h1>
+    <div class="header-actions">
+      <div class="search-trigger" aria-label="搜尋事件">
+        <i class="fas fa-search" onclick="md_ShowPanel('SearchPanel');"></i>
+      </div>
+      <button id="view-toggle" aria-label="切換視圖">
+        <i class="fas fa-calendar-week"></i>
+      </button>
+      <select id="language" aria-label="選擇語言">
+        <option value="zh">中文</option>
+        <option value="en">English</option>
       </select>
-      <select id="search-type">
-        <option value="">所有類別</option>
-        <option value="important-exam">重要考試</option>
-        <option value="school-activity">學校活動</option>
-        <option value="announcement">公告</option>
-        <option value="holiday">假期</option>
-      </select>
-      <select id="search-month">
-        <option value="">所有月份</option>
-        <option value="0">1月</option>
-        <option value="1">2月</option>
-        <option value="2">3月</option>
-        <option value="3">4月</option>
-        <option value="4">5月</option>
-        <option value="5">6月</option>
-        <option value="6">7月</option>
-        <option value="7">8月</option>
-        <option value="8">9月</option>
-        <option value="9">10月</option>
-        <option value="10">11月</option>
-        <option value="11">12月</option>
-      </select>
-      <button id="search-btn">查詢</button>
     </div>
-    <select id="language">
-      <option value="zh">中文</option>
-      <option value="en">English</option>
-    </select>
   </header>
 
   <nav>
-    <button id="prev-month">Previous Month</button>
-    <span id="current-month"></span>
-    <button id="next-month">Next Month</button>
-    <button id="today">Today</button>
-    <button id="toggle-events">Hide Events</button>
+    <button id="prev-month" aria-label="上個月">
+      <i class="fas fa-chevron-left"></i> <span class="button-text">Previous Month</span>
+    </button>
+    <span id="current-month" role="heading" aria-level="2"></span>
+    <button id="next-month" aria-label="下個月">
+      <span class="button-text">Next Month</span> <i class="fas fa-chevron-right"></i>
+    </button>
+    <button id="today" aria-label="今天">
+      <i class="fas fa-calendar-day"></i> <span class="button-text">Today</span>
+    </button>
+    <button id="toggle-events" aria-label="顯示/隱藏事件清單">
+      <i class="fas fa-list"></i> <span class="button-text">Hide Events</span>
+    </button>
+    <button id="print-calendar" aria-label="列印日曆">
+      <i class="fas fa-print"></i> <span class="button-text">Print</span>
+    </button>
   </nav>
 
   <main class="flex">
     <section id="calendar" class="flex-grow">
+      <div class="view-selector">
+        <button class="active" data-view="month">月視圖</button>
+        <button data-view="week">週視圖</button>
+        <button data-view="agenda">議程視圖</button>
+      </div>
       <div class="calendar-grid"></div>
+      <div class="week-view" style="display: none;"></div>
+      <div class="agenda-view" style="display: none;"></div>
     </section>
     <aside id="event-list" class="visible">
+      <div class="event-list-header">
+        <h3 id="event-list-title">當月事件</h3>
+        <div class="event-filter">
+          <button class="filter-btn active" data-filter="all">全部</button>
+          <button class="filter-btn" data-filter="important-exam">考試</button>
+          <button class="filter-btn" data-filter="school-activity">活動</button>
+          <button class="filter-btn" data-filter="announcement">公告</button>
+          <button class="filter-btn" data-filter="holiday">假期</button>
+        </div>
+      </div>
       <ul></ul>
+      <div id="no-events" style="display: none;">
+        <p>無事件</p>
+      </div>
     </aside>
   </main>
 
+  <!-- 事件詳情彈窗 -->
+  <div id="event-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <article id="event-modal-content"></article>
+    </div>
+  </div>
+
+  <!-- 搜尋面板 -->
+  <div id="SearchPanel" class="search-panel" style="display: none;">
+    <h3>進階搜尋</h3>
+    <div class="search-container">
+      <div class="search-field">
+        <label for="search-keyword">關鍵字：</label>
+        <input type="text" id="search-keyword" placeholder="搜尋事件標題或描述">
+      </div>
+      <div class="search-field">
+        <label for="search-grade">年級：</label>
+        <select id="search-grade">
+          <option value="">所有年級</option>
+          <option value="grade-1">高一</option>
+          <option value="grade-2">高二</option>
+          <option value="grade-3">高三</option>
+          <option value="all-grades">全年級</option>
+        </select>
+      </div>
+      <div class="search-field">
+        <label for="search-type">類別：</label>
+        <select id="search-type">
+          <option value="">所有類別</option>
+          <option value="important-exam">重要考試</option>
+          <option value="school-activity">學校活動</option>
+          <option value="announcement">公告</option>
+          <option value="holiday">假期</option>
+        </select>
+      </div>
+      <div class="search-field">
+        <label for="search-date-range">時間範圍：</label>
+        <div class="date-range">
+          <input type="date" id="search-start-date" placeholder="開始日期">
+          <span>至</span>
+          <input type="date" id="search-end-date" placeholder="結束日期">
+        </div>
+      </div>
+      <div class="search-actions">
+        <button id="search-btn" onclick="searchEvents();">查詢</button>
+        <button id="reset-search" onclick="resetSearch();">重置</button>
+        <button id="cancel-search" onclick="md_HidePanel('SearchPanel');">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="loading-overlay">
+    <div class="loading-spinner"></div>
+    <p>載入中...</p>
+  </div>
+
+  <div id="notification" class="notification">
+    <div class="notification-content">
+      <i class="notification-icon"></i>
+      <span class="notification-message"></span>
+    </div>
+  </div>
+
   <footer>
-    <p>© 2025 Guo</p>
+    <p>© 2025 學校日曆系統</p>
+    <div class="footer-links">
+      <a href="#" id="about-link">關於</a>
+      <a href="#" id="help-link">使用說明</a>
+      <a href="#" id="feedback-link">意見回饋</a>
+    </div>
   </footer>
 
   <script src="script.js"></script>
-  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9213eac0be0c53ed',t:'MTc0MjEyNDYxMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
